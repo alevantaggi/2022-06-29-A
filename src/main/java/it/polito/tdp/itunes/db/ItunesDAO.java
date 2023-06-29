@@ -139,4 +139,30 @@ public class ItunesDAO {
 		return result;
 	}
 	
+	public List<Album> getFilteredAlbums(int n){
+		List<Album> result = new LinkedList<>();
+		String sql = "SELECT a.AlbumId, a.Title, COUNT(*) AS tot "
+				+ "FROM album a, track t "
+				+ "WHERE a.AlbumId=t.AlbumId "
+				+ "GROUP BY a.AlbumId "
+				+ "HAVING tot>?";
+		
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, n);
+			
+			ResultSet res = st.executeQuery();
+
+			while (res.next()) 
+				result.add(new Album(res.getInt("AlbumId"), res.getString("Title"),res.getInt("tot")));
+			
+			conn.close();
+			return result;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("SQL Error");
+		}
+	}
 }
